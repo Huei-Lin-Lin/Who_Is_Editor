@@ -13,20 +13,18 @@ def writeResult(result, filePath):
   f.close()
   
 def crawlerHackMD(url, driverPath, part):
-  idList = [] # 第幾行
+  lineNumberList = [] # 第幾行
   editorList = [] # 第幾行是誰編輯
 
   options = webdriver.ChromeOptions() 
-  # to supress the error messages/logs
   options.add_experimental_option('excludeSwitches', ['enable-logging'])
   options.add_argument('--ignore-ssl-errors=yes')
   options.add_argument('--ignore-certificate-errors')
   options.add_argument('--disable-dev-shm-usage')
-  options.add_argument('--disable-gpu') #關閉 GPU 避免某些系統或是網頁出錯
-  options.add_argument('blink-settings=imagesEnabled=false')  # 不載入圖片, 提升速度
+  options.add_argument('--disable-gpu') # 關閉 GPU 避免某些系統或是網頁出錯
+  options.add_argument('blink-settings=imagesEnabled=false')  # 不載入圖片，提升速度
   options.add_argument('--no-sandbox') # 以最高權限執行
   options.add_argument("--disable-javascript") # 禁用 JavaScript
-  # 禁用瀏覽器彈出視窗
   prefs = {  
       'profile.default_content_setting_values' :  {  
           'notifications' : 2  
@@ -56,9 +54,9 @@ def crawlerHackMD(url, driverPath, part):
           WebDriverWait(driver, 50).until(
             EC.presence_of_element_located((By.CLASS_NAME,'CodeMirror-linenumber'))
           )
-          id = line.find_element(By.CLASS_NAME,'CodeMirror-linenumber').text
+          lineNumber = line.find_element(By.CLASS_NAME,'CodeMirror-linenumber').text
       except:
-          print('catch id error')
+          print('catch lineNumber error')
           continue
       try:
           WebDriverWait(driver, 50).until(
@@ -75,19 +73,21 @@ def crawlerHackMD(url, driverPath, part):
                 EC.presence_of_element_located((By.CLASS_NAME,'authorship-gutter'))
               )
               editor = line.find_element(By.CLASS_NAME,'authorship-gutter').get_attribute("data-original-title")
-              if(id not in idList):
-                  idList.append(id)
-                  editorList.append({'id':id, 'editor':editor})
+              if(lineNumber not in lineNumberList):
+                  lineNumberList.append(lineNumber)
+                  editorList.append({'line number':lineNumber, 'editor':editor})
           except:
               print('no editor')
     
     WebDriverWait(driver, 50).until(
       EC.presence_of_element_located((By.CLASS_NAME,'btn.btn-default.ui-view'))
     )
+    
     # change to view mode
     viewBtn = driver.find_element(By.CLASS_NAME,'btn.btn-default.ui-view')
     viewBtn.click()
     time.sleep(3)
+
     # scroll down
     driver.execute_script(f'window.scrollTo(0, document.body.scrollHeight/{part}*{i})')
     time.sleep(3)
@@ -97,11 +97,10 @@ def crawlerHackMD(url, driverPath, part):
 
 
 def main():
-  # part = 15 
-  crawlerResultPath = 'HackMD_Editors.txt' # 爬蟲結果位置
-  url = 'https://hackmd.io/x-mWPyvdQ3GrWXNeKpYcIg?view' # HackMD 網址
-  chromeDriverPath = 'chromedriver.exe'
-  part = 15
+  url = '< 檢視模式的 HackMD 網址 >' 
+  chromeDriverPath = '< chrome driver 路徑 >'
+  crawlerResultPath = '< 存爬蟲結果的檔案名稱 >' 
+  part = 15 # 網頁分成幾部分滾動
   crawlerResult = crawlerHackMD(url, chromeDriverPath, part)
   writeResult(crawlerResult, crawlerResultPath)
 main()
